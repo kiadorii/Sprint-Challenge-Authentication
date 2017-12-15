@@ -6,15 +6,15 @@ const createUser = (req, res) => {
   // use that req.user object to create a user and save it to our Mongo instance.
   const { username, password } = req.user;
   const newUser = new User({ username, password });
-  newUser.save((err, savedUser) =>{
-    if (err) {
+  newUser
+    .save()
+    .then((newUser) => {
+      res.json(newUser);
+    })
+    .catch((err) => {
       res.status(422);
-      res.json({ 'Cannot create User': err });
-      return;
-    }
-    res.json(savedUser);
-    next();
-  });
+      res.json({ error: err });
+    });
 };
 
 module.exports = {

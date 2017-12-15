@@ -50,6 +50,7 @@ const encryptUserPW = (req, res, next) => {
   bycrypt
     .hash(password, SaltRounds)
     .then((pw) => {
+      req.username = username;
       req.password = pw;
       next();
     })
