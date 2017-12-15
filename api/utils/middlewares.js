@@ -69,8 +69,9 @@ const compareUserPW = (req, res, next) => {
   bcrypt
     .compare(password, User.password, (err, response) => {
       if (err) {
-        return callbackify(err);
+        return cb(err);
       }
+      req.username = username;
       cb(null, response);
     });
 };
