@@ -21,12 +21,41 @@ const authenticate = (req, res, next) => {
 };
 
 const encryptUserPW = (req, res, next) => {
-  const { username, password } = req.body;
+
   // https://github.com/kelektiv/node.bcrypt.js#usage
   // TODO: Fill this middleware in with the Proper password encrypting, bcrypt.hash()
-  // Once the password is encrypted using bcrypt, you'll need to save the user the DB.
-  // Once the user is set, take the savedUser and set the returned document from Mongo on req.user
-  // call next to head back into the route handler for encryptUserPW
+  // Encrypt the PW first and set the user object on `req.user` 
+  // then call `next` and handle saving that user in the `userController`
+  
+  const { username, password } = req.body;
+  
+  /* GENERATING A SALT AND HASH ON SEPARATE FUNCTION CALLS ---- LS-AUTH-JWT EXAMPLE */
+  // bcrypt.genSalt(SaltRounds, (err, salt) => {
+    //   if (err) {
+      //     return next(err);
+      //   }
+      //   bcrypt.hash(password, salt, (err, hash) => {
+        //     if (err) {
+          //       return next(err);
+          //     }
+          //     password = hash;
+          //     next();
+          //   });
+          // });
+  /* AUTO GENERATING SALT AND HASH ---- AUTH */
+  if (!password) {
+    res.json({ error: `Need a password, ${res}` });
+    return;
+  }
+  bycrypt
+    .hash(password, SaltRounds)
+    .then((pw) => {
+      req.password = pw;
+      next();
+    })
+    .catch((err) => {
+      throw new Error(err);
+    });
 };
 
 const compareUserPW = (req, res, next) => {
@@ -36,6 +65,14 @@ const compareUserPW = (req, res, next) => {
   // You'll need to find the user in your DB
   // Once you have the user, you'll need to pass the encrypted pw and the plaintext pw to the compare function
   // If the passwords match set the username on `req` ==> req.username = user.username; and call next();
+
+  bcrypt
+    .compare(password, User.password, (err, response) => {
+      if (err) {
+        return callbackify(err);
+      }
+      cb(null, response);
+    });
 };
 
 module.exports = {
